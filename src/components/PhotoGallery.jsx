@@ -23,6 +23,18 @@ const photos = [
   { src: '/photos/diana-20.jpeg', caption: 'Огонь', tall: true },
   { src: '/photos/diana-14.jpeg', caption: 'Вайб' },
   { src: '/photos/diana-18.jpeg', caption: 'Воля' },
+  { src: '/photos/diana-22.jpeg', caption: 'Шеф-повар', tall: true },
+  { src: '/photos/diana-25.jpeg', caption: 'Взгляд золота' },
+  { src: '/photos/diana-23.jpeg', caption: 'Сладкий сон' },
+  { src: '/photos/diana-27.jpeg', caption: 'Элегантность', tall: true },
+  { src: '/photos/diana-26.jpeg', caption: 'Настроение B&W' },
+  { src: '/photos/diana-28.jpeg', caption: 'Зеркало' },
+  { src: '/photos/diana-30.jpeg', caption: 'Мы', tall: true },
+  { src: '/photos/diana-34.jpeg', caption: 'Рука в руке' },
+  { src: '/photos/diana-32.jpeg', caption: 'Вместе' },
+  { src: '/photos/diana-29.jpeg', caption: 'Уютно', tall: true },
+  { src: '/photos/diana-31.jpeg', caption: 'Дурашки' },
+  { src: '/photos/diana-24.jpeg', caption: 'Арт-мув' },
 ]
 
 function PhotoCard({ photo, index, onClick }) {
