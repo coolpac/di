@@ -1,7 +1,29 @@
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { HeartIcon, HeartOutlineIcon, KissIcon, SparkleIcon, StarIcon, RoseIcon, BouquetIcon } from './SvgIcons'
+
+const floatingIcons = [
+  { Component: HeartIcon, color: '#E8587A' },
+  { Component: HeartIcon, color: '#FF69B4' },
+  { Component: HeartIcon, color: '#FF85A2' },
+  { Component: HeartOutlineIcon, color: '#E8587A' },
+  { Component: HeartOutlineIcon, color: '#FF69B4' },
+  { Component: KissIcon, color: '#E8587A' },
+  { Component: SparkleIcon, color: '#D4AF37' },
+  { Component: StarIcon, color: '#D4AF37' },
+  { Component: RoseIcon },
+  { Component: BouquetIcon },
+]
+
+const autoIcons = [
+  { Component: HeartIcon, color: '#E8587A' },
+  { Component: HeartIcon, color: '#FF69B4' },
+  { Component: HeartIcon, color: '#FF85A2' },
+  { Component: SparkleIcon, color: '#D4AF37' },
+]
 
 function FloatingHeart({ heart, onRemove }) {
+  const { Component, color } = heart.icon
   return (
     <motion.div
       initial={{ x: heart.x, y: heart.y, scale: 0, opacity: 1 }}
@@ -18,11 +40,10 @@ function FloatingHeart({ heart, onRemove }) {
         position: 'fixed',
         pointerEvents: 'none',
         zIndex: 100,
-        fontSize: `${heart.size}px`,
         filter: heart.glow ? 'drop-shadow(0 0 8px rgba(255,100,150,0.6))' : 'none',
       }}
     >
-      {heart.emoji}
+      <Component size={heart.size} color={color} />
     </motion.div>
   )
 }
@@ -196,8 +217,6 @@ export default function Finale({ showExtra }) {
     const rect = e?.currentTarget?.getBoundingClientRect() || { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 0, height: 0 }
     const centerX = rect.left + rect.width / 2
     const centerY = rect.top + rect.height / 2
-    const emojis = ['\u2764\uFE0F', '\u{1F497}', '\u{1F496}', '\u{1F495}', '\u{1F49E}', '\u{1F48B}', '\u2728', '\u{1F31F}', '\u{1F339}', '\u{1F490}']
-
     // Flash effect
     setShowFlash(true)
     setTimeout(() => setShowFlash(false), 200)
@@ -213,7 +232,7 @@ export default function Finale({ showExtra }) {
           x: centerX + (Math.random() - 0.5) * (150 + wi * 80),
           y: centerY + (Math.random() - 0.5) * 60,
           size: 18 + Math.random() * 28,
-          emoji: emojis[Math.floor(Math.random() * emojis.length)],
+          icon: floatingIcons[Math.floor(Math.random() * floatingIcons.length)],
           glow: Math.random() < 0.4,
         }))
         setHearts(prev => [...prev, ...newHearts])
@@ -237,13 +256,12 @@ export default function Finale({ showExtra }) {
   useEffect(() => {
     if (isInView && !kissTriggered) {
       const timer = setTimeout(() => {
-        const emojis = ['\u2764\uFE0F', '\u{1F497}', '\u{1F496}', '\u2728']
         const newHearts = Array.from({ length: 6 }, (_, i) => ({
           id: Date.now() + i,
           x: window.innerWidth / 2 + (Math.random() - 0.5) * 200,
           y: window.innerHeight * 0.6,
           size: 16 + Math.random() * 18,
-          emoji: emojis[Math.floor(Math.random() * emojis.length)],
+          icon: autoIcons[Math.floor(Math.random() * autoIcons.length)],
           glow: false,
         }))
         setHearts(prev => [...prev, ...newHearts])
@@ -314,9 +332,9 @@ export default function Finale({ showExtra }) {
           <motion.div
             animate={{ scale: [1, 1.15, 1] }}
             transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-            style={{ fontSize: 'clamp(3rem, 8vw, 4.5rem)', marginBottom: '24px' }}
+            style={{ marginBottom: '24px', display: 'flex', justifyContent: 'center' }}
           >
-            {'\u2764\uFE0F'}
+            <HeartIcon size={64} color="#E8587A" />
           </motion.div>
         </motion.div>
 
@@ -361,7 +379,7 @@ export default function Finale({ showExtra }) {
             lineHeight: 1.7,
           }}
         >
-          С праздником, моя любимая Диана!
+          С праздником, моя любимая Дианочка!
           <br />
           Пусть каждый день будет наполнен
           <br />
@@ -391,8 +409,8 @@ export default function Finale({ showExtra }) {
             overflow: 'hidden',
           }}
         >
-          <span style={{ position: 'relative', zIndex: 2 }}>
-            {'\u{1F48B}'} Отправить виртуальный поцелуй
+          <span style={{ position: 'relative', zIndex: 2, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <KissIcon size={20} color="#fff" /> Отправить виртуальный поцелуй
           </span>
         </motion.button>
 
@@ -410,9 +428,12 @@ export default function Finale({ showExtra }) {
                 marginBottom: '30px',
               }}
             >
-              {kissCount === 1 ? 'Поцелуй отправлен!' :
-               kissCount < 5 ? `Уже ${kissCount} поцелуя!` :
-               `${kissCount} поцелуев! Диана счастлива!`} {'\u{1F48B}'}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                {kissCount === 1 ? 'Поцелуй отправлен!' :
+                 kissCount < 5 ? `Уже ${kissCount} поцелуя!` :
+                 `${kissCount} поцелуев! Дианочка счастлива!`}
+                <KissIcon size={14} color="var(--rose)" />
+              </span>
             </motion.p>
           )}
         </AnimatePresence>
@@ -439,7 +460,9 @@ export default function Finale({ showExtra }) {
                 color: 'var(--rose-deep)',
                 fontSize: '1rem',
               }}>
-                {'\u2728'} Все пары найдены — ты умничка!
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <SparkleIcon size={18} color="#D4AF37" /> Все пары найдены — ты умничка!
+                </span>
               </p>
             </motion.div>
           )}
@@ -463,7 +486,9 @@ export default function Finale({ showExtra }) {
             fontSize: 'clamp(1rem, 3vw, 1.2rem)',
             color: 'var(--text-dark)',
           }}>
-            С любовью, навсегда твой {'\u2764\uFE0F'}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              С любовью, навсегда твой <HeartIcon size={18} color="#E8587A" />
+            </span>
           </p>
           <p style={{
             fontFamily: 'var(--font-body)',

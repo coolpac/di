@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import { motion, useInView } from 'framer-motion'
+import { HeartIcon } from './SvgIcons'
 
 const reasons = [
   'За твою улыбку, от которой всё вокруг светлеет',
@@ -215,9 +216,9 @@ export default function TypewriterLove() {
             <motion.div
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 1.5, repeat: Infinity }}
-              style={{ fontSize: '1.5rem', marginTop: '12px' }}
+              style={{ marginTop: '12px', display: 'flex', justifyContent: 'center' }}
             >
-              ❤️
+              <HeartIcon size={28} color="#E8587A" />
             </motion.div>
           </motion.div>
         )}

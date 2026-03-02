@@ -1,11 +1,12 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { HeartIcon, SparkleIcon } from './SvgIcons'
 
 const SCRATCH_THRESHOLD = 0.55
 const BRUSH_RADIUS = 28
 
 const hiddenMessage = 'Ты — моё всё'
-const hiddenSubtext = 'Моя любимая Диана'
+const hiddenSubtext = 'Моя любимая Дианочка'
 
 export default function ScratchCard() {
   const sectionRef = useRef(null)
@@ -60,7 +61,7 @@ export default function ScratchCard() {
     ctx.font = `${mobile ? 13 : 15}px Inter, sans-serif`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText('Потри, чтобы узнать секрет ✨', cardW / 2, cardH / 2)
+    ctx.fillText('Потри, чтобы узнать секрет', cardW / 2, cardH / 2)
     ctx.restore()
   }, [cardW, cardH, mobile])
 
@@ -221,9 +222,8 @@ export default function ScratchCard() {
           <motion.div
             animate={revealed ? { scale: [0, 1.2, 1], rotate: [0, 10, -10, 0] } : {}}
             transition={{ duration: 0.8, ease: 'easeOut' }}
-            style={{ fontSize: mobile ? '2.5rem' : '3rem' }}
           >
-            💖
+            <HeartIcon size={mobile ? 40 : 48} color="#E8587A" />
           </motion.div>
           <motion.div
             animate={revealed ? { opacity: 1, y: 0 } : { opacity: 0.3, y: 0 }}
@@ -355,7 +355,9 @@ export default function ScratchCard() {
             letterSpacing: '0.05em',
           }}
         >
-          ✨ Секрет раскрыт ✨
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <SparkleIcon size={16} color="#D4AF37" /> Секрет раскрыт <SparkleIcon size={16} color="#D4AF37" />
+          </span>
         </motion.div>
       )}
     </section>

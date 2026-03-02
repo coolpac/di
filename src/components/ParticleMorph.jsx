@@ -1,8 +1,8 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 import { motion, useInView } from 'framer-motion'
+import { HeartIcon } from './SvgIcons'
 
-const PHOTO_SRC = '/photos/diana-34.jpeg' // Holding hands in snow — romantic
-const PARTICLE_SIZE = 3
+const PHOTO_SRC = '/photos/diana-34.jpeg' // Holding hands in snow
 
 // Heart shape parametric function
 function heartPoint(t, scale, cx, cy) {
@@ -18,29 +18,30 @@ export default function ParticleMorph() {
   const sectionRef = useRef(null)
   const canvasRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-80px' })
-  const [phase, setPhase] = useState('idle') // idle, photo, morphing, heart, returning
+  const [phase, setPhase] = useState('idle')
   const [isReady, setIsReady] = useState(false)
+  const [showPhoto, setShowPhoto] = useState(true)
   const particles = useRef([])
   const animRef = useRef(null)
-  const imgRef = useRef(null)
+  const timersRef = useRef([])
 
   const mobile = typeof window !== 'undefined' && window.innerWidth < 768
-  const canvasW = mobile ? Math.min(340, window.innerWidth - 40) : 450
-  const canvasH = mobile ? 340 : 450
+  const canvasW = mobile ? Math.min(320, window.innerWidth - 40) : 400
+  const canvasH = mobile ? 400 : 500
   const pixelRatio = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1
 
-  // Load image and sample pixels
+  // Photo display dimensions (same as canvas)
+  const photoSize = Math.min(canvasW, canvasH) * 0.85
+
   const initParticles = useCallback(() => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
-      imgRef.current = img
-
-      // Draw image to offscreen canvas to sample pixels
       const offscreen = document.createElement('canvas')
-      const imgSize = Math.min(canvasW, canvasH) * 0.8
-      offscreen.width = imgSize
-      offscreen.height = imgSize
+      const imgW = photoSize
+      const imgH = photoSize
+      offscreen.width = imgW
+      offscreen.height = imgH
 
       const ctx = offscreen.getContext('2d')
       // Cover crop
@@ -57,91 +58,75 @@ export default function ParticleMorph() {
         sx = 0
         sy = (img.height - sh) / 2
       }
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, imgSize, imgSize)
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, imgW, imgH)
 
-      const imageData = ctx.getImageData(0, 0, imgSize, imgSize)
+      const imageData = ctx.getImageData(0, 0, imgW, imgH)
       const data = imageData.data
 
-      // Sample particles from image
-      const step = mobile ? 5 : 4
+      // Denser sampling for recognizable photo
+      const step = mobile ? 3 : 2
+      const particleSize = mobile ? 3 : 2
       const cx = canvasW / 2
       const cy = canvasH / 2
-      const offsetX = (canvasW - imgSize) / 2
-      const offsetY = (canvasH - imgSize) / 2
+      const offsetX = (canvasW - imgW) / 2
+      const offsetY = (canvasH - imgH) / 2
       const pts = []
 
-      for (let y = 0; y < imgSize; y += step) {
-        for (let x = 0; x < imgSize; x += step) {
-          const i = (y * imgSize + x) * 4
+      for (let y = 0; y < imgH; y += step) {
+        for (let x = 0; x < imgW; x += step) {
+          const i = (y * imgW + x) * 4
           const r = data[i]
           const g = data[i + 1]
           const b = data[i + 2]
           const a = data[i + 3]
           if (a < 128) continue
 
-          // Image position
           const imgX = offsetX + x
           const imgY = offsetY + y
-
-          // Heart position
-          const heartScale = mobile ? 8 : 10.5
-          const angle = Math.random() * Math.PI * 2
-          const { x: hx, y: hy } = heartPoint(angle, heartScale, cx, cy * 0.95)
-          // Add slight randomness to fill the heart
-          const rad = Math.random() * heartScale * 3
-          const innerAngle = Math.random() * Math.PI * 2
-          const heartX = hx + Math.cos(innerAngle) * rad * 0.3
-          const heartY = hy + Math.sin(innerAngle) * rad * 0.3
 
           pts.push({
             x: imgX,
             y: imgY,
             homeX: imgX,
             homeY: imgY,
-            heartX,
-            heartY,
+            heartX: 0,
+            heartY: 0,
             targetX: imgX,
             targetY: imgY,
             r, g, b,
-            size: PARTICLE_SIZE + Math.random() * 1,
+            size: particleSize,
             vx: 0,
             vy: 0,
           })
         }
       }
 
-      // Re-distribute heart positions evenly
-      const heartPoints = []
+      // Distribute heart positions
       const numPts = pts.length
       for (let i = 0; i < numPts; i++) {
         const t = (i / numPts) * Math.PI * 2
-        const heartScale = mobile ? 8.5 : 11
-        const { x: hx, y: hy } = heartPoint(t, heartScale, cx, cy * 0.95)
-        // Fill the interior
-        const fill = Math.random()
+        const heartScale = mobile ? 9 : 12
+        const { x: hx, y: hy } = heartPoint(t, heartScale, cx, cy * 0.92)
+        // Fill interior
+        const fill = Math.sqrt(Math.random()) // sqrt for more uniform fill
         const fx = cx + (hx - cx) * fill
-        const fy = cy * 0.95 + (hy - cy * 0.95) * fill
-        heartPoints.push({ x: fx, y: fy })
+        const fy = cy * 0.92 + (hy - cy * 0.92) * fill
+        pts[i].heartX = fx
+        pts[i].heartY = fy
       }
 
-      // Sort by distance for better mapping
-      heartPoints.sort((a, b) => {
-        const da = Math.atan2(a.y - cy, a.x - cx)
-        const db = Math.atan2(b.y - cy, b.x - cx)
-        return da - db
-      })
-
-      pts.forEach((p, i) => {
-        const hp = heartPoints[i % heartPoints.length]
-        p.heartX = hp.x
-        p.heartY = hp.y
+      // Sort particles by position for spatial coherence in heart mapping
+      pts.sort((a, b) => {
+        const angleA = Math.atan2(a.homeY - cy, a.homeX - cx)
+        const angleB = Math.atan2(b.homeY - cy, b.homeX - cx)
+        return angleA - angleB
       })
 
       particles.current = pts
       setIsReady(true)
     }
     img.src = PHOTO_SRC
-  }, [canvasW, canvasH, mobile])
+  }, [canvasW, canvasH, photoSize, mobile])
 
   useEffect(() => {
     if (isInView) initParticles()
@@ -167,13 +152,12 @@ export default function ParticleMorph() {
       const pts = particles.current
       for (let i = 0; i < pts.length; i++) {
         const p = pts[i]
-        // Ease toward target
         const dx = p.targetX - p.x
         const dy = p.targetY - p.y
-        p.vx += dx * 0.06
-        p.vy += dy * 0.06
-        p.vx *= 0.88
-        p.vy *= 0.88
+        p.vx += dx * 0.08
+        p.vy += dy * 0.08
+        p.vx *= 0.85
+        p.vy *= 0.85
         p.x += p.vx
         p.y += p.vy
 
@@ -191,72 +175,68 @@ export default function ParticleMorph() {
     }
   }, [isReady, canvasW, canvasH, pixelRatio])
 
-  // Start sequence when visible
+  // Clear all timers helper
+  const clearTimers = () => {
+    timersRef.current.forEach(t => clearTimeout(t))
+    timersRef.current = []
+  }
+
+  const addTimer = (fn, ms) => {
+    const id = setTimeout(fn, ms)
+    timersRef.current.push(id)
+    return id
+  }
+
+  // Animation sequence
   useEffect(() => {
     if (!isReady || !isInView) return
-    // Show photo first
+
     setPhase('photo')
+    setShowPhoto(true)
 
-    const t1 = setTimeout(() => {
+    const runCycle = (delay = 0) => {
+      // Hide photo and show particles as photo
+      addTimer(() => {
+        setShowPhoto(false)
+      }, delay + 1000)
+
       // Morph to heart
-      setPhase('morphing')
-      particles.current.forEach(p => {
-        p.targetX = p.heartX
-        p.targetY = p.heartY
-      })
-    }, 2500)
+      addTimer(() => {
+        setPhase('morphing')
+        particles.current.forEach(p => {
+          p.targetX = p.heartX
+          p.targetY = p.heartY
+        })
+      }, delay + 2500)
 
-    const t2 = setTimeout(() => {
-      setPhase('heart')
-    }, 4500)
+      addTimer(() => {
+        setPhase('heart')
+      }, delay + 4500)
 
-    const t3 = setTimeout(() => {
       // Return to photo
-      setPhase('returning')
-      particles.current.forEach(p => {
-        p.targetX = p.homeX
-        p.targetY = p.homeY
-      })
-    }, 7000)
+      addTimer(() => {
+        setPhase('returning')
+        particles.current.forEach(p => {
+          p.targetX = p.homeX
+          p.targetY = p.homeY
+        })
+      }, delay + 7000)
 
-    const t4 = setTimeout(() => {
-      setPhase('photo')
-      // Loop: morph again
-      const loop = () => {
-        const lt1 = setTimeout(() => {
-          setPhase('morphing')
-          particles.current.forEach(p => {
-            p.targetX = p.heartX
-            p.targetY = p.heartY
-          })
-        }, 3000)
+      // Show real photo again
+      addTimer(() => {
+        setPhase('photo')
+        setShowPhoto(true)
+      }, delay + 9000)
 
-        const lt2 = setTimeout(() => setPhase('heart'), 5000)
-
-        const lt3 = setTimeout(() => {
-          setPhase('returning')
-          particles.current.forEach(p => {
-            p.targetX = p.homeX
-            p.targetY = p.homeY
-          })
-        }, 8000)
-
-        const lt4 = setTimeout(() => {
-          setPhase('photo')
-          loop()
-        }, 10000)
-
-        return [lt1, lt2, lt3, lt4]
-      }
-      loop()
-    }, 9000)
-
-    return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
-      clearTimeout(t3)
-      clearTimeout(t4)
+      // Loop
+      addTimer(() => {
+        runCycle(0)
+      }, delay + 12000)
     }
+
+    runCycle(500)
+
+    return () => clearTimers()
   }, [isReady, isInView])
 
   return (
@@ -307,14 +287,39 @@ export default function ParticleMorph() {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={isInView && isReady ? { opacity: 1, scale: 1 } : {}}
         transition={{ duration: 0.8, delay: 0.3 }}
-        style={{ position: 'relative' }}
+        style={{ position: 'relative', width: canvasW, height: canvasH }}
       >
+        {/* Real photo — shown during "photo" phase for clarity */}
+        <motion.img
+          src={PHOTO_SRC}
+          alt="Мы"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: showPhoto ? 1 : 0 }}
+          transition={{ duration: 0.8 }}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: photoSize,
+            height: photoSize,
+            objectFit: 'cover',
+            borderRadius: '16px',
+            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)',
+            zIndex: 2,
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Particle canvas */}
         <canvas
           ref={canvasRef}
           style={{
             width: canvasW,
             height: canvasH,
             borderRadius: '20px',
+            position: 'relative',
+            zIndex: 1,
           }}
         />
 
@@ -323,7 +328,6 @@ export default function ParticleMorph() {
           key={phase}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
           style={{
             textAlign: 'center',
@@ -332,13 +336,20 @@ export default function ParticleMorph() {
             fontStyle: 'italic',
             fontSize: '1rem',
             color: 'var(--text-light)',
+            position: 'absolute',
+            bottom: -40,
+            left: 0,
+            right: 0,
           }}
         >
           {phase === 'morphing' && 'Превращается в любовь...'}
-          {phase === 'heart' && '❤️'}
+          {phase === 'heart' && <HeartIcon size={20} color="#E8587A" style={{ display: 'inline-block', verticalAlign: 'middle' }} />}
           {phase === 'returning' && 'И снова мы...'}
         </motion.div>
       </motion.div>
+
+      {/* Spacer for phase label */}
+      <div style={{ height: '50px' }} />
 
       {!isReady && isInView && (
         <motion.div
