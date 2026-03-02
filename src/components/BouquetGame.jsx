@@ -2,7 +2,8 @@ import { useRef, useState, useEffect, useCallback } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 
 const GAME_DURATION = 35
-const BASE_SPAWN_RATE = 55 // frames between spawns (decreases over time)
+const BASE_SPAWN_RATE = 55
+const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768
 
 const FLOWER_TYPES = [
   { id: 'white-rose', good: true, points: 1, speed: 2.2, size: 38 },
@@ -39,8 +40,11 @@ function drawFlower(ctx, x, y, size, type, glow) {
   ctx.fill()
 
   if (type.id === 'white-rose') {
-    // Gorgeous white rose with layered petals
-    const petalLayers = [
+    // White rose — simplified on mobile
+    const petalLayers = IS_MOBILE ? [
+      { count: 5, r: size * 0.35, w: size * 0.2, color: '#fff5f8' },
+      { count: 3, r: size * 0.15, w: size * 0.12, color: '#fff8fa' },
+    ] : [
       { count: 7, r: size * 0.38, w: size * 0.2, color: '#fff5f8' },
       { count: 5, r: size * 0.25, w: size * 0.17, color: '#ffffff' },
       { count: 3, r: size * 0.12, w: size * 0.12, color: '#fff8fa' },
@@ -440,10 +444,11 @@ function GameCanvas({ onComplete }) {
               setScore(s.score)
               setCombo(s.combo)
 
-              // Particles burst
+              // Particles burst (fewer on mobile)
               const colors = ['#FFD700', '#FF69B4', '#FFF0F5', '#FF1493', '#FFFFFF']
-              for (let i = 0; i < 12; i++) {
-                s.particles.push(new Particle(f.x, f.y, colors[Math.floor(Math.random() * colors.length)], 4, 40, 2 + Math.random() * 3))
+              const pCount = IS_MOBILE ? 5 : 12
+              for (let i = 0; i < pCount; i++) {
+                s.particles.push(new Particle(f.x, f.y, colors[Math.floor(Math.random() * colors.length)], 4, 30, 2 + Math.random() * 2))
               }
 
               // Score text
@@ -453,10 +458,11 @@ function GameCanvas({ onComplete }) {
 
               // Combo text
               if (s.combo > 0 && s.combo % 5 === 0) {
-                s.texts.push(new FloatingText(w / 2, h / 2, `COMBO x${s.combo}!`, '#D4AF37', 32))
-                s.shakeAmount = 8
-                for (let i = 0; i < 25; i++) {
-                  s.particles.push(new Particle(w / 2 + (Math.random() - 0.5) * 200, h / 2, '#FFD700', 6, 50, 3))
+                s.texts.push(new FloatingText(w / 2, h / 2, `COMBO x${s.combo}!`, '#D4AF37', 28))
+                s.shakeAmount = IS_MOBILE ? 4 : 8
+                const comboP = IS_MOBILE ? 8 : 25
+                for (let i = 0; i < comboP; i++) {
+                  s.particles.push(new Particle(w / 2 + (Math.random() - 0.5) * 150, h / 2, '#FFD700', 5, 40, 2.5))
                 }
               }
             } else {
@@ -467,8 +473,9 @@ function GameCanvas({ onComplete }) {
               setCombo(0)
 
               // Bad particles
-              for (let i = 0; i < 8; i++) {
-                s.particles.push(new Particle(f.x, f.y, '#ff4444', 3, 30, 2))
+              const badP = IS_MOBILE ? 3 : 8
+              for (let i = 0; i < badP; i++) {
+                s.particles.push(new Particle(f.x, f.y, '#ff4444', 3, 25, 2))
               }
               s.texts.push(new FloatingText(f.x, f.y - 20, f.type.points.toString(), '#e8587a', 20))
             }

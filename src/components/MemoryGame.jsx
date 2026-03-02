@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { RoseIcon, SparkleIcon, HeartIcon, StarIcon, PartyIcon, RefreshIcon, FlowerIcon } from './SvgIcons'
 
 const PHOTO_PAIRS = [
   { src: '/photos/diana-9.jpeg', label: 'Красотка' },
@@ -120,7 +121,7 @@ function GameCard({ card, isFlipped, isMatched, onClick, index }) {
         {/* Back face (visible by default) */}
         <div style={cardBackStyle}>
           <div style={cardBackInnerStyle}>
-            <span style={{ fontSize: '1.3rem', opacity: 0.7 }}>{'\u{1F490}'}</span>
+            <RoseIcon size={22} style={{ opacity: 0.7 }} />
           </div>
         </div>
 
@@ -197,7 +198,7 @@ function GameCard({ card, isFlipped, isMatched, onClick, index }) {
             fontSize: '2rem',
           }}
         >
-          {'\u2728'}
+          <SparkleIcon size={32} color="#D4AF37" />
         </motion.div>
       )}
     </motion.div>
@@ -205,24 +206,21 @@ function GameCard({ card, isFlipped, isMatched, onClick, index }) {
 }
 
 function WinCelebration({ moves, onReset }) {
+  const SvgParticles = [HeartIcon, RoseIcon, SparkleIcon, FlowerIcon, StarIcon]
+  const particleColors = ['#E8587A', '#4A7C2E', '#D4AF37', '#F4A0B5', '#D4AF37']
   const particles = Array.from({ length: 14 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
     delay: Math.random() * 0.6,
     size: Math.random() * 14 + 12,
-    emoji: ['\u2764\uFE0F', '\u{1F339}', '\u2728', '\u{1F33A}', '\u{1F497}', '\u{1F48B}', '\u{1F31F}'][i % 7],
+    Component: SvgParticles[i % SvgParticles.length],
+    color: particleColors[i % particleColors.length],
   }))
 
-  let rating = '\u2B50\u2B50\u2B50'
+  let starCount = 3
   let ratingText = 'Идеально!'
-  if (moves > 12) {
-    rating = '\u2B50\u2B50'
-    ratingText = 'Отлично!'
-  }
-  if (moves > 18) {
-    rating = '\u2B50'
-    ratingText = 'Хорошо!'
-  }
+  if (moves > 12) { starCount = 2; ratingText = 'Отлично!' }
+  if (moves > 18) { starCount = 1; ratingText = 'Хорошо!' }
 
   return (
     <motion.div
@@ -245,11 +243,10 @@ function WinCelebration({ moves, onReset }) {
             position: 'absolute',
             left: `${h.x}%`,
             bottom: 0,
-            fontSize: `${h.size}px`,
             pointerEvents: 'none',
           }}
         >
-          {h.emoji}
+          <h.Component size={h.size} color={h.color} />
         </motion.div>
       ))}
 
@@ -257,9 +254,9 @@ function WinCelebration({ moves, onReset }) {
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: 'spring', damping: 10, stiffness: 150, delay: 0.2 }}
-        style={{ fontSize: '2.5rem', marginBottom: '12px' }}
+        style={{ marginBottom: '12px' }}
       >
-        {'\u{1F389}'}
+        <PartyIcon size={48} />
       </motion.div>
 
       <motion.h3
@@ -281,9 +278,11 @@ function WinCelebration({ moves, onReset }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
-        style={{ fontSize: '1.8rem', marginBottom: '4px' }}
+        style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginBottom: '4px' }}
       >
-        {rating}
+        {Array.from({ length: starCount }, (_, i) => (
+          <StarIcon key={i} size={28} color="#D4AF37" />
+        ))}
       </motion.div>
 
       <motion.p
@@ -295,9 +294,13 @@ function WinCelebration({ moves, onReset }) {
           fontSize: '0.9rem',
           color: 'var(--text-light)',
           marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '6px',
         }}
       >
-        {ratingText + ' ' + moves + ' ходов \u{1F496}'}
+        {ratingText} {moves} ходов <HeartIcon size={16} color="#F4A0B5" />
       </motion.p>
 
       <motion.button
@@ -317,9 +320,12 @@ function WinCelebration({ moves, onReset }) {
           color: 'white',
           cursor: 'pointer',
           boxShadow: '0 4px 20px rgba(232, 88, 122, 0.3)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
         }}
       >
-        {'\u{1F504}'} Играть ещё
+        <RefreshIcon size={16} color="#fff" /> Играть ещё
       </motion.button>
     </motion.div>
   )
@@ -462,10 +468,10 @@ export default function MemoryGame({ onComplete }) {
           }}
         >
           <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--text-medium)' }}>
-            {'\u{1F3AF}'} Ходов: <strong>{moves}</strong>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#E8587A" strokeWidth="1.5" opacity="0.4" /><circle cx="12" cy="12" r="5" stroke="#E8587A" strokeWidth="1.5" opacity="0.6" /><circle cx="12" cy="12" r="1.5" fill="#E8587A" /></svg> Ходов: <strong>{moves}</strong></span>
           </div>
           <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--text-medium)' }}>
-            {'\u2764\uFE0F'} Пар: <strong>{matched.size}</strong> / {pairCount}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><HeartIcon size={14} color="#E8587A" /> Пар: <strong>{matched.size}</strong> / {pairCount}</span>
           </div>
           {gameStarted && !gameWon && (
             <motion.button
@@ -483,7 +489,7 @@ export default function MemoryGame({ onComplete }) {
                 cursor: 'pointer',
               }}
             >
-              {'\u{1F504}'} Заново
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><RefreshIcon size={12} color="#E8587A" /> Заново</span>
             </motion.button>
           )}
         </motion.div>
@@ -509,7 +515,7 @@ export default function MemoryGame({ onComplete }) {
                 transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
                 style={{ fontSize: '2rem', marginBottom: '12px', display: 'inline-block' }}
               >
-                {'\u{1F338}'}
+                <FlowerIcon size={32} color="#F4A0B5" />
               </motion.div>
               <div>Загружаем фоточки...</div>
             </motion.div>

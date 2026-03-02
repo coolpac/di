@@ -240,6 +240,36 @@ export default function MusicVisualizer() {
           width: '100%',
         }}
       >
+        {/* Album cover photo */}
+        <motion.div
+          animate={{ scale: heartScale }}
+          transition={{ duration: 0.1 }}
+          style={{
+            width: mobile ? 140 : 180,
+            height: mobile ? 140 : 180,
+            borderRadius: '50%',
+            overflow: 'hidden',
+            border: '3px solid rgba(212, 175, 55, 0.4)',
+            boxShadow: isPlaying
+              ? '0 0 40px rgba(232, 88, 122, 0.4), 0 0 80px rgba(232, 88, 122, 0.15)'
+              : '0 10px 40px rgba(0, 0, 0, 0.3)',
+            transition: 'box-shadow 0.3s ease',
+          }}
+        >
+          <motion.img
+            src="/photos/diana-30.jpeg"
+            alt="Мы"
+            animate={isPlaying ? { rotate: 360 } : { rotate: 0 }}
+            transition={isPlaying ? { duration: 8, repeat: Infinity, ease: 'linear' } : { duration: 0.5 }}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              display: 'block',
+            }}
+          />
+        </motion.div>
+
         {/* Heart + Visualizer */}
         <div style={{ position: 'relative', width: canvasW, height: canvasH + 80 }}>
           {/* Pulsing heart behind canvas */}
@@ -255,12 +285,12 @@ export default function MusicVisualizer() {
             }}
           >
             <svg
-              width={mobile ? 60 : 80}
-              height={mobile ? 60 : 80}
+              width={mobile ? 40 : 50}
+              height={mobile ? 40 : 50}
               viewBox="0 0 24 24"
               style={{ filter: 'drop-shadow(0 0 20px rgba(232, 88, 122, 0.5))' }}
             >
-              <path d={heartPath} fill="var(--rose-deep)" opacity="0.3" />
+              <path d={heartPath} fill="var(--rose-deep)" opacity="0.25" />
             </svg>
           </motion.div>
 
