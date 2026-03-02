@@ -57,8 +57,13 @@ function KissFireworks({ active, containerRef }) {
       '#E8587A', '#D4AF37', '#FF85A2', '#FFB6C1', '#FFFFFF',
     ]
 
-    // Multiple explosion centers
-    const centers = [
+    // Multiple explosion centers (fewer on mobile)
+    const mobile = window.innerWidth < 768
+    const centers = mobile ? [
+      { x: w * 0.5, y: h * 0.4 },
+      { x: w * 0.3, y: h * 0.35 },
+      { x: w * 0.7, y: h * 0.35 },
+    ] : [
       { x: w * 0.5, y: h * 0.4 },
       { x: w * 0.3, y: h * 0.3 },
       { x: w * 0.7, y: h * 0.35 },
@@ -69,7 +74,7 @@ function KissFireworks({ active, containerRef }) {
     // Staggered explosions
     centers.forEach((center, ci) => {
       setTimeout(() => {
-        const count = 40 + Math.floor(Math.random() * 20)
+        const count = mobile ? 18 + Math.floor(Math.random() * 10) : 40 + Math.floor(Math.random() * 20)
         for (let i = 0; i < count; i++) {
           const angle = (i / count) * Math.PI * 2 + Math.random() * 0.5
           const speed = 2 + Math.random() * 5
@@ -197,11 +202,12 @@ export default function Finale({ showExtra }) {
     setShowFlash(true)
     setTimeout(() => setShowFlash(false), 200)
 
-    // Multiple waves of hearts
-    const waves = [0, 150, 350, 600]
+    // Multiple waves of hearts (fewer on mobile)
+    const isMob = window.innerWidth < 768
+    const waves = isMob ? [0, 200] : [0, 150, 350, 600]
     waves.forEach((delay, wi) => {
       setTimeout(() => {
-        const count = 12 + wi * 3
+        const count = isMob ? 6 : 12 + wi * 3
         const newHearts = Array.from({ length: count }, (_, i) => ({
           id: Date.now() + i + wi * 100,
           x: centerX + (Math.random() - 0.5) * (150 + wi * 80),
@@ -433,7 +439,7 @@ export default function Finale({ showExtra }) {
                 color: 'var(--rose-deep)',
                 fontSize: '1rem',
               }}>
-                {'\u{1F490}'} Букет собран и ждёт тебя!
+                {'\u2728'} Все пары найдены — ты умничка!
               </p>
             </motion.div>
           )}

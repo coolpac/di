@@ -5,7 +5,7 @@ import Hero from './components/Hero'
 import Congratulation from './components/Congratulation'
 import PhotoGallery from './components/PhotoGallery'
 import WishesGallery from './components/WishesGallery'
-import BouquetGame from './components/BouquetGame'
+import MemoryGame from './components/MemoryGame'
 import Finale from './components/Finale'
 
 function App() {
@@ -18,7 +18,7 @@ function App() {
       <Congratulation />
       <PhotoGallery />
       <WishesGallery />
-      <BouquetGame onComplete={() => setGameCompleted(true)} />
+      <MemoryGame onComplete={() => setGameCompleted(true)} />
       <Finale showExtra={gameCompleted} />
     </div>
   )
